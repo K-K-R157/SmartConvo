@@ -1,0 +1,17 @@
+# Ignore backend dependencies and environment config
+backened/node_modules/
+backened/.env
+
+# Ignore learn folder
+learn/
+
+# Ignore build output (if any at root or other folders)
+dist/
+build/
+
+# Ignore log files
+*.log
+
+# Ignore specific files
+backened.txt
+frontened.txt

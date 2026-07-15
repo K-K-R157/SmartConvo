@@ -1,12 +1,3 @@
-// import React from 'react'
-
-// export const NotificationPage = () => {
-//   return (
-//     <div>NotificationPage</div>
-//   )
-// }
-
-
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { acceptFriendRequest, getFriendRequests } from "../lib/api";

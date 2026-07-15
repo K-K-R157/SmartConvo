@@ -1,11 +1,9 @@
-import React, { useRef, useEffect, useState } from "react";
-import io from "socket.io-client";
+import { useRef, useEffect, useState } from "react";
 
-const socket = io(`${import.meta.env.VITE_BACKEND_URL}`);
-// const socket = io("https://c7d3-2409-40e5-11e6-731b-1878-7d8-9556-91d9.ngrok-free.app");
-
-
-const VideoCall = ({ currentUser, remoteUser, onClose }) => {
+// ✅ VideoCall now receives socket as a prop (uses the shared app socket)
+// ✅ Room-based signaling (no more broadcast to all users)
+// ✅ Includes TURN servers for cross-network calls
+const VideoCall = ({ currentUser, remoteUser, onClose, socket }) => {
   const localVideo = useRef();
   const remoteVideo = useRef();
   const peerConnection = useRef();
@@ -17,67 +15,94 @@ const VideoCall = ({ currentUser, remoteUser, onClose }) => {
       : "default_room";
 
   useEffect(() => {
+    if (!socket) return;
+
     let localStream;
 
-    navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(stream => {
-      localVideo.current.srcObject = stream;
-      localStream = stream;
-peerConnection.current = new RTCPeerConnection({
-  iceServers: [
-    { urls: "stun:stun.l.google.com:19302" }
-  ]
-});
-      stream.getTracks().forEach(track => peerConnection.current.addTrack(track, stream));
+    navigator.mediaDevices
+      .getUserMedia({ video: true, audio: true })
+      .then((stream) => {
+        localVideo.current.srcObject = stream;
+        localStream = stream;
 
-      peerConnection.current.ontrack = event => {
-        remoteVideo.current.srcObject = event.streams[0];
-      };
+        peerConnection.current = new RTCPeerConnection({
+          iceServers: [
+            { urls: "stun:stun.l.google.com:19302" },
+            { urls: "stun:stun1.l.google.com:19302" },
+            // ✅ Free TURN servers from metered.ca (relay for cross-network calls)
+            {
+              urls: "turn:a.relay.metered.ca:80",
+              username: "open",
+              credential: "open",
+            },
+            {
+              urls: "turn:a.relay.metered.ca:443",
+              username: "open",
+              credential: "open",
+            },
+            {
+              urls: "turn:a.relay.metered.ca:443?transport=tcp",
+              username: "open",
+              credential: "open",
+            },
+          ],
+        });
 
-      peerConnection.current.onicecandidate = event => {
-        if (event.candidate) {
-          socket.emit("ice-candidate", { candidate: event.candidate, roomId });
-        }
-      };
+        stream.getTracks().forEach((track) => peerConnection.current.addTrack(track, stream));
 
-      const handleIce = ({ candidate, roomId: incomingRoom }) => {
-        if (incomingRoom === roomId && candidate) {
-          peerConnection.current.addIceCandidate(new RTCIceCandidate(candidate));
-        }
-      };
-      const handleOffer = async ({ offer, roomId: incomingRoom }) => {
-        if (incomingRoom === roomId) {
-          await peerConnection.current.setRemoteDescription(new RTCSessionDescription(offer));
-          const answer = await peerConnection.current.createAnswer();
-          await peerConnection.current.setLocalDescription(answer);
-          socket.emit("answer", { answer, roomId });
-          setCallStarted(true);
-        }
-      };
-      const handleAnswer = async ({ answer, roomId: incomingRoom }) => {
-        if (incomingRoom === roomId) {
-          await peerConnection.current.setRemoteDescription(new RTCSessionDescription(answer));
-          setCallStarted(true);
-        }
-      };
-
-      socket.on("ice-candidate", handleIce);
-      socket.on("offer", handleOffer);
-      socket.on("answer", handleAnswer);
-
-      socket.emit("join-room", roomId);
-
-      if (currentUser && currentUser._id < remoteUser._id) {
-        peerConnection.current.onnegotiationneeded = async () => {
-          const offer = await peerConnection.current.createOffer();
-          await peerConnection.current.setLocalDescription(offer);
-          socket.emit("offer", { offer, roomId });
+        peerConnection.current.ontrack = (event) => {
+          remoteVideo.current.srcObject = event.streams[0];
         };
-      }
-    })
+
+        peerConnection.current.onicecandidate = (event) => {
+          if (event.candidate) {
+            socket.emit("ice-candidate", { candidate: event.candidate, roomId });
+          }
+        };
+
+        const handleIce = ({ candidate, roomId: incomingRoom }) => {
+          if (incomingRoom === roomId && candidate) {
+            peerConnection.current.addIceCandidate(new RTCIceCandidate(candidate));
+          }
+        };
+
+        const handleOffer = async ({ offer, roomId: incomingRoom }) => {
+          if (incomingRoom === roomId) {
+            await peerConnection.current.setRemoteDescription(new RTCSessionDescription(offer));
+            const answer = await peerConnection.current.createAnswer();
+            await peerConnection.current.setLocalDescription(answer);
+            socket.emit("answer", { answer, roomId });
+            setCallStarted(true);
+          }
+        };
+
+        const handleAnswer = async ({ answer, roomId: incomingRoom }) => {
+          if (incomingRoom === roomId) {
+            await peerConnection.current.setRemoteDescription(new RTCSessionDescription(answer));
+            setCallStarted(true);
+          }
+        };
+
+        socket.on("ice-candidate", handleIce);
+        socket.on("offer", handleOffer);
+        socket.on("answer", handleAnswer);
+
+        // ✅ Join the room on the server for scoped signaling
+        socket.emit("join-room", roomId);
+
+        // The user with the smaller ID creates the offer (deterministic)
+        if (currentUser && currentUser._id < remoteUser._id) {
+          peerConnection.current.onnegotiationneeded = async () => {
+            const offer = await peerConnection.current.createOffer();
+            await peerConnection.current.setLocalDescription(offer);
+            socket.emit("offer", { offer, roomId });
+          };
+        }
+      });
 
     return () => {
       if (localVideo.current && localVideo.current.srcObject) {
-        localVideo.current.srcObject.getTracks().forEach(track => track.stop());
+        localVideo.current.srcObject.getTracks().forEach((track) => track.stop());
       }
       if (peerConnection.current) {
         peerConnection.current.close();
@@ -88,7 +113,7 @@ peerConnection.current = new RTCPeerConnection({
       socket.off("answer");
     };
     // eslint-disable-next-line
-  }, [currentUser, remoteUser]);
+  }, [currentUser, remoteUser, socket]);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-80 flex flex-col items-center justify-center z-50">

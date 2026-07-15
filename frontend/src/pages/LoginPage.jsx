@@ -1,13 +1,3 @@
-// import React from 'react'
-
-//  export const LoginPage = () => {
-//   return (
-//     <div>LoginPage</div>
-//   )
-// }
-
-
-
 import { useState } from "react";
 import { ShipWheelIcon } from "lucide-react";
 import { Link } from "react-router";
@@ -19,18 +9,6 @@ const LoginPage = () => {
     password: "",
   });
 
-  // This is how we did it at first, without using our custom hook
-  // const queryClient = useQueryClient();
-  // const {
-  //   mutate: loginMutation,
-  //   isPending,
-  //   error,
-  // } = useMutation({
-  //   mutationFn: login,
-  //   onSuccess: () => queryClient.invalidateQueries({ queryKey: ["authUser"] }),
-  // });
-
-  // This is how we did it using our custom hook - optimized version
   const { isPending, error, loginMutation } = useLogin();
 
   const handleLogin = (e) => {
@@ -50,7 +28,7 @@ const LoginPage = () => {
           <div className="mb-4 flex items-center justify-start gap-2">
             <ShipWheelIcon className="size-9 text-primary" />
             <span className="text-3xl font-bold font-mono bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary  tracking-wider">
-              Streamify
+              SmartConvo
             </span>
           </div>
 
@@ -99,7 +77,6 @@ const LoginPage = () => {
                       required
                     />
                   </div>
-                  
 
                   <button type="submit" className="btn btn-primary w-full" disabled={isPending}>
                     {isPending ? (
@@ -129,7 +106,6 @@ const LoginPage = () => {
         {/* IMAGE SECTION */}
         <div className="hidden lg:flex w-full lg:w-1/2 bg-primary/10 items-center justify-center">
           <div className="max-w-md p-8">
-            {/* Illustration */}
             <div className="relative aspect-square max-w-sm mx-auto">
               <img src="/i.png" alt="Language connection illustration" className="w-full h-full" />
             </div>

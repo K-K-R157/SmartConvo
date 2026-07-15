@@ -1,107 +1,133 @@
-# ConvoCam
+# SmartConvo 💬
 
-A full-stack chat application built with **React (Vite)** frontend and **Node.js + Express** backend, using **MongoDB** for data storage.
+A full-stack real-time chat and video calling platform built with the MERN stack, featuring AI-powered smart replies, language translation, and peer-to-peer video calling.
 
----
+## ✨ Features
 
-## 🚀 Features
+### Core
+- **JWT Cookie Authentication** — Secure login/signup with HTTP-only cookies
+- **Real-Time Messaging** — Instant chat powered by Socket.IO & WebSockets
+- **Friend Request System** — Send, accept, and manage friend requests
+- **Online Presence** — Live green-dot indicators for online users
 
-- User authentication (JWT, cookies)
-- Real-time chat (Socket.io)
-- Friend requests
-- File/image upload
-- Google Gemini API integration
-- Language translation
-- Online users tracking
+### Communication
+- **WebRTC Video Calling (Quick Call)** — Peer-to-peer video with TURN server support
+- **Stream SDK Video (HD Call)** — Production-grade HD video with screen sharing
+- **Typing Indicators** — Real-time "is typing..." status
+- **Read Receipts** — Message status: ✓ Sent → ✓✓ Delivered → ✓✓ Read (blue)
 
----
+### AI Features
+- **Gemini Smart Replies** — AI-generated reply suggestions based on incoming messages
+- **Real-Time Translation** — Translate messages to Hindi, Spanish, French, Bengali on the fly
 
-## 🏗️ Project Structure
+### Media & UX
+- **Cloudinary File Uploads** — Share images and files in chat
+- **Voice Typing** — Speech-to-text input using browser Speech Recognition API
+- **Infinite Chat Scrolling** — Cursor-based pagination for message history
+- **32 Themes** — Switchable DaisyUI themes with persistence
+- **Responsive Design** — Mobile, tablet, and desktop layouts
 
-```
-/frontened   # React + Vite frontend
-/backened    # Node.js + Express backend
-```
+## 🛠️ Tech Stack
 
----
+| Layer | Technology |
+|---|---|
+| **Frontend** | React, Vite, TailwindCSS, DaisyUI |
+| **Backend** | Node.js, Express.js |
+| **Database** | MongoDB, Mongoose |
+| **Real-Time** | Socket.IO, WebSockets |
+| **Video** | WebRTC (peer-to-peer), Stream Video SDK |
+| **AI** | Google Gemini API |
+| **Auth** | JWT (HTTP-only cookies) |
+| **Media** | Cloudinary |
+| **State** | Zustand, React Query |
 
-## ⚙️ Setup Instructions
+## 🚀 Getting Started
 
-### 1. Clone the repository
+### Prerequisites
+- **Node.js** v18+
+- **MongoDB** (local or Atlas)
+- Free API keys (see below)
 
-```sh
-git clone https://github.com/yourusername/ConvoCam.git
-cd ConvoCam
+### 1. Clone the repo
+```bash
+git clone https://github.com/your-username/SmartConvo.git
+cd SmartConvo
 ```
 
 ### 2. Install dependencies
+```bash
+# Backend
+cd backend
+npm install
 
-- **Frontend:**
-  ```sh
-  cd frontened
-  npm install
-  ```
+# Frontend
+cd ../frontend
+npm install
+```
 
-- **Backend:**
-  ```sh
-  cd backened
-  npm install
-  ```
+### 3. Set up environment variables
 
-### 3. Environment Variables
+Copy the example files and fill in your keys:
 
-- **Frontend (`frontened/.env`):**
-  ```
-  VITE_BACKEND_URL=http://localhost:5001
-  ```
+```bash
+# Backend
+cp backend/.env.example backend/.env
 
-- **Backend (`backened/.env`):**
-  ```
-  PORT=5001
-  MONGO_URI=your_mongodb_uri
-  JWT_SECRET_KEY=your_jwt_secret
-  ```
+# Frontend
+cp frontend/.env.example frontend/.env
+```
 
-### 4. Run locally
+#### Required API Keys (all FREE):
 
-- **Frontend:**
-  ```sh
-  npm run dev
-  ```
+| Key | Where to Get |
+|---|---|
+| **Gemini API Key** | [aistudio.google.com/apikey](https://aistudio.google.com/apikey) |
+| **Cloudinary** | [cloudinary.com/console](https://cloudinary.com/console) |
+| **Stream** | [getstream.io/dashboard](https://getstream.io/dashboard) |
 
-- **Backend:**
-  ```sh
-  npm run dev
-  ```
+### 4. Seed the database (optional)
+```bash
+cd backend
+npm run seed
+```
+Creates 10 test users with friendships and messages. Password for all: `password123`
 
----
+### 5. Run the app
+```bash
+# Terminal 1 — Backend
+cd backend
+npm start
 
-## 🌐 Deployment
+# Terminal 2 — Frontend
+cd frontend
+npm run dev
+```
 
-- **Frontend:** Vercel ([see deployed link](https://convo-cam-git-main-priyanshu886291kumars-projects.vercel.app/login))
-- 
-- **Backend:** Render or other Node.js hosting(https://convo-backend-te78.onrender.com/)
+Open [http://localhost:5173](http://localhost:5173) in your browser.
 
-Update `VITE_BACKEND_URL` in frontend `.env` to your backend’s deployed URL.
+## 📁 Project Structure
 
----
+```
+SmartConvo/
+├── backend/
+│   ├── controllers/      # Route handlers (auth, user, chat)
+│   ├── middleware/        # JWT auth middleware
+│   ├── models/            # Mongoose schemas (User, Message, FriendRequest)
+│   ├── routes/            # API routes (auth, users, messages, gemini, upload)
+│   ├── lib/               # DB connection, Stream client
+│   ├── server.js          # Express + Socket.IO server
+│   └── seed.js            # Database seeder
+├── frontend/
+│   ├── src/
+│   │   ├── components/    # ChatContainer, VideoCall, Sidebar, Navbar, etc.
+│   │   ├── pages/         # Login, SignUp, Onboarding, Call, Friends, etc.
+│   │   ├── hooks/         # useAuthUser, useSocket, useLogin, useSignUp
+│   │   ├── store/         # Zustand stores (chat, theme)
+│   │   └── lib/           # Axios instance, API functions
+│   └── index.html
+└── .gitignore
+```
 
-## 📦 API Endpoints
+## 📜 License
 
-- `/api/auth` – Authentication
-- `/api/users` – User management
-- `/api/chat` – Chat operations
-- `/api/messages` – Messaging
-- `/api/upload` – File uploads
-- `/api/gemini` – Gemini API
-- `/api/translate` – Translation
-- `/api/stream` – Streaming
-
----
-
-## 🤝 Contributing
-
-Pull requests welcome! Please open issues for bugs or feature requests.
-
----
-
+This project is open source and available under the [MIT License](LICENSE).
